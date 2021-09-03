@@ -44,6 +44,7 @@ func createHealthCheck() HealthCheckLib.HealthCheck {
 		AuthSource: config.Get().MongoAuthSource,
 		Timeout:    3,
 		ForceTLS:   config.Get().ForceTLS,
+		MaxPoolSize:   100,
 	}
 
 	rabbitConfig := &rabbit.Config{
