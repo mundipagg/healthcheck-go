@@ -7,6 +7,7 @@ Bliblioteca de health check em Golang.
 ### Lista de serviços
 1. MongoDB;
 2. RabbitMQ.
+2. SQL Server.
 
 ## Instalação
 
