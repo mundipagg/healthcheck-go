@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 
 var (
 	conn              *mongo.Client
-	ConnectionTimeout = 3 * time.Second
+	ConnectionTimeout = 999 * time.Second
 	mu                sync.RWMutex
 )
 
@@ -59,10 +60,15 @@ func (service *healthCheck) executeCheck() error {
 		return errors.New("URL is empty")
 	}
 
+	start := time.Now()
 	_, err := service.connectMongo()
+	elapsed := time.Since(start)
+
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("Elapsed time: ", elapsed)
 
 	return ping()
 }
