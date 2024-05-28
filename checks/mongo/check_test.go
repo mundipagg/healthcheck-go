@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"testing"
+	"time"
 
 	check "github.com/mundipagg/healthcheck-go/checks"
 	"github.com/stretchr/testify/assert"
@@ -35,4 +36,14 @@ func Test_Execute_WhenConfigurationIsInvalid_ShouldReturnUnhealthy(t *testing.T)
 	assert.NotNil(t, result)
 	assert.Equal(t, result.Status, check.Unhealthy)
 	assert.Contains(t, result.Description, "ERROR:")
+}
+
+func Test_getConnectionTimeout(t *testing.T) {
+	config := newStubMongoConfig()
+
+	assert.Equal(t, getConnectionTimeout(config), 3*time.Second)
+
+	config.ConnectionTimeout = 5
+
+	assert.Equal(t, getConnectionTimeout(config), 5*time.Second)
 }

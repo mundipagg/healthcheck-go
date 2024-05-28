@@ -16,19 +16,20 @@ import (
 
 var (
 	conn              *mongo.Client
-	ConnectionTimeout = 3 * time.Second
+	connectionTimeout = 3 * time.Second
 	mu                sync.RWMutex
 )
 
 type Config struct {
-	Url         string
-	User        string
-	Password    string
-	Database    string
-	AuthSource  string
-	Timeout     int
-	ForceTLS    bool
-	MaxPoolSize int
+	Url               string
+	User              string
+	Password          string
+	Database          string
+	AuthSource        string
+	Timeout           int
+	ForceTLS          bool
+	MaxPoolSize       int
+	ConnectionTimeout int
 }
 
 type healthCheck struct {
@@ -60,11 +61,12 @@ func (service *healthCheck) executeCheck() error {
 	}
 
 	_, err := service.connectMongo()
+
 	if err != nil {
 		return err
 	}
 
-	return ping()
+	return ping(service.Config)
 }
 
 func (service *healthCheck) connectMongo() (*mongo.Client, error) {
@@ -75,7 +77,7 @@ func (service *healthCheck) connectMongo() (*mongo.Client, error) {
 		return conn, nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), ConnectionTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), getConnectionTimeout(service.Config))
 	defer cancel()
 
 	var err error
@@ -87,14 +89,14 @@ func (service *healthCheck) connectMongo() (*mongo.Client, error) {
 	return conn, nil
 }
 
-func ping() error {
+func ping(config *Config) error {
 	var err error
 	if conn == nil {
 		err = errors.New("Connection is empty")
 		return err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), ConnectionTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), getConnectionTimeout(config))
 	defer cancel()
 
 	err = conn.Ping(ctx, readpref.Primary())
@@ -120,6 +122,14 @@ func getClientOptions(config *Config) *options.ClientOptions {
 	}
 
 	return co.ApplyURI(mongoURL).SetAuth(mongoCredential(config))
+}
+
+func getConnectionTimeout(config *Config) time.Duration {
+	if config.ConnectionTimeout > 0 {
+		return time.Duration(config.ConnectionTimeout) * time.Second
+	}
+
+	return connectionTimeout
 }
 
 func mongoCredential(config *Config) options.Credential {
