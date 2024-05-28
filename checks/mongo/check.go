@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
@@ -61,15 +60,11 @@ func (service *healthCheck) executeCheck() error {
 		return errors.New("URL is empty")
 	}
 
-	start := time.Now()
 	_, err := service.connectMongo()
-	elapsed := time.Since(start)
 
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("Elapsed time: ", elapsed)
 
 	return ping(service.Config)
 }
